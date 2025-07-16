@@ -35,7 +35,7 @@ const fetchGDPDataFromApi = async () => {
       .attr('cx', (d) => xScale(new Date(d['Year'])))
       .attr('cy', (d) => yScale(parseTime(d['Time'])))
       .attr('r', (d) => 5)
-      .attr('fill', 'blue');
+      .attr('fill', (d) => (d['Doping'] ? 'orange' : 'green'));
 
     const xAxis = d3.axisBottom(xScale);
     const yAxis = d3.axisLeft(yScale);
