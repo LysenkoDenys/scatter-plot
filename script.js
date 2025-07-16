@@ -13,13 +13,25 @@ const fetchGDPDataFromApi = async () => {
     const response = await fetch(dataUrl);
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     const dataset = await response.json();
-    const dates = dataset.map((d) => new Date(d['Year']));
+    const dates = dataset.map((d) => new Date(d['Year'], 0));
     const parseTime = d3.timeParse('%M:%S');
     const times = dataset.map((d) => parseTime(d['Time']));
 
+    console.log(dates); //
+    console.log(times); //
+
+    const minYear = d3.min(dates);
+    const maxYear = d3.max(dates);
+
+    const extendedMin = new Date(minYear);
+    extendedMin.setFullYear(extendedMin.getFullYear() - 1);
+
+    const extendedMax = new Date(maxYear);
+    extendedMax.setFullYear(extendedMax.getFullYear() + 1);
+
     const xScale = d3
       .scaleTime()
-      .domain([d3.min(dates), d3.max(dates)])
+      .domain([extendedMin, extendedMax])
       .range([padding, w - padding]);
 
     const yScale = d3
@@ -32,10 +44,13 @@ const fetchGDPDataFromApi = async () => {
       .data(dataset)
       .enter()
       .append('circle')
-      .attr('cx', (d) => xScale(new Date(d['Year'])))
+      .attr('cx', (d) => xScale(new Date(d['Year'], 0)))
       .attr('cy', (d) => yScale(parseTime(d['Time'])))
       .attr('r', (d) => 5)
-      .attr('fill', (d) => (d['Doping'] ? 'orange' : 'green'));
+      .attr('fill', (d) => (d['Doping'] ? 'orange' : 'green'))
+      .attr('class', 'dot')
+      .attr('data-xvalue', (d) => new Date(d['Year'], 0))
+      .attr('data-yvalue', (d) => parseTime(d['Time']));
 
     const xAxis = d3.axisBottom(xScale);
     const yAxis = d3.axisLeft(yScale);
