@@ -6,9 +6,16 @@ const w = 800;
 const h = 500;
 svg.attr('width', w).attr('height', h);
 
-const padding = 50;
+const padding = 60;
 
-const fetchGDPDataFromApi = async () => {
+const tooltip = d3
+  .select('body')
+  .append('div')
+  .attr('id', 'tooltip')
+  .style('opacity', 0)
+  .style('position', 'absolute');
+
+const fetchCyclistData = async () => {
   try {
     const response = await fetch(dataUrl);
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -16,9 +23,7 @@ const fetchGDPDataFromApi = async () => {
     const dates = dataset.map((d) => new Date(d['Year'], 0));
     const parseTime = d3.timeParse('%M:%S');
     const times = dataset.map((d) => parseTime(d['Time']));
-
-    console.log(dates); //
-    console.log(times); //
+    const formatTime = d3.timeFormat('%M:%S');
 
     const minYear = d3.min(dates);
     const maxYear = d3.max(dates);
@@ -50,10 +55,30 @@ const fetchGDPDataFromApi = async () => {
       .attr('fill', (d) => (d['Doping'] ? 'orange' : 'green'))
       .attr('class', 'dot')
       .attr('data-xvalue', (d) => new Date(d['Year'], 0))
-      .attr('data-yvalue', (d) => parseTime(d['Time']));
+      .attr('data-yvalue', (d) => parseTime(d['Time']))
+      // ========================================================
+      .on('mouseover', function (event, d) {
+        tooltip
+          .style('opacity', 1)
+          .attr('data-year', d.Year)
+          .html(
+            `${d.Name}: ${d.Nationality}<br>Year: ${d.Year}, Time: ${d.Time}`
+          )
+          .style('left', event.pageX + 10 + 'px')
+          .style('top', event.pageY - 28 + 'px');
+
+        d3.select(this).attr('fill', 'red');
+      })
+
+      .on('mouseout', function () {
+        tooltip.style('opacity', 0);
+        d3.select(this).attr('fill', (d) => (d.Doping ? 'orange' : 'green'));
+      });
+    //===========================================================
+    drawLegend(svg, w);
 
     const xAxis = d3.axisBottom(xScale);
-    const yAxis = d3.axisLeft(yScale);
+    const yAxis = d3.axisLeft(yScale).tickFormat(formatTime);
     svg
       .select('#x-axis')
       .attr('transform', `translate(0,${h - padding})`)
@@ -67,4 +92,39 @@ const fetchGDPDataFromApi = async () => {
     console.error('Fetch error:', error);
   }
 };
-fetchGDPDataFromApi();
+
+const drawLegend = (svg, w) => {
+  const legend = svg.append('g').attr('id', 'legend');
+
+  legend
+    .append('rect')
+    .attr('x', w - 200)
+    .attr('y', 100)
+    .attr('width', 15)
+    .attr('height', 15)
+    .style('fill', 'orange');
+  legend
+    .append('text')
+    .attr('x', w - 180)
+    .attr('y', 112)
+    .text('Riders with doping allegations')
+    .style('font-size', '12px')
+    .attr('alignment-baseline', 'middle');
+
+  legend
+    .append('rect')
+    .attr('x', w - 200)
+    .attr('y', 130)
+    .attr('width', 15)
+    .attr('height', 15)
+    .style('fill', 'green');
+  legend
+    .append('text')
+    .attr('x', w - 180)
+    .attr('y', 142)
+    .text('No doping allegations')
+    .style('font-size', '12px')
+    .attr('alignment-baseline', 'middle');
+};
+
+fetchCyclistData();
