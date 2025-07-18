@@ -9,9 +9,7 @@ svg.attr('width', w).attr('height', h);
 const padding = 60;
 
 const tooltip = d3
-  .select('body')
-  .append('div')
-  .attr('id', 'tooltip')
+  .select('#tooltip')
   .style('opacity', 0)
   .style('position', 'absolute');
 
@@ -60,19 +58,26 @@ const fetchCyclistData = async () => {
       .on('mouseover', function (event, d) {
         tooltip
           .style('opacity', 1)
-          .attr('data-year', d.Year)
+          .style('display', 'block')
+          .attr('data-year', new Date(d.Year, 0))
           .html(
             `${d.Name}: ${d.Nationality}<br>Year: ${d.Year}, Time: ${d.Time}`
           )
-          .style('left', event.pageX + 10 + 'px')
+          .style('left', event.pageX + 12 + 'px')
           .style('top', event.pageY - 28 + 'px');
 
-        d3.select(this).attr('fill', 'red');
+        d3.select(this)
+          .attr('fill', 'red')
+          .transition()
+          .duration(200)
+          .attr('r', 7);
       })
 
       .on('mouseout', function () {
         tooltip.style('opacity', 0);
-        d3.select(this).attr('fill', (d) => (d.Doping ? 'orange' : 'green'));
+        d3.select(this)
+          .attr('fill', (d) => (d.Doping ? 'orange' : 'green'))
+          .attr('r', 5);
       });
     //===========================================================
     drawLegend(svg, w);
