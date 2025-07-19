@@ -23,23 +23,30 @@ const fetchCyclistData = async () => {
     const times = dataset.map((d) => parseTime(d['Time']));
     const formatTime = d3.timeFormat('%M:%S');
 
+    console.log(times); //
     const minYear = d3.min(dates);
     const maxYear = d3.max(dates);
 
-    const extendedMin = new Date(minYear);
-    extendedMin.setFullYear(extendedMin.getFullYear() - 1);
+    const extendedMinYear = new Date(minYear);
+    extendedMinYear.setFullYear(extendedMinYear.getFullYear() - 1);
 
-    const extendedMax = new Date(maxYear);
-    extendedMax.setFullYear(extendedMax.getFullYear() + 1);
+    const extendedMaxYear = new Date(maxYear);
+    extendedMaxYear.setFullYear(extendedMaxYear.getFullYear() + 1);
+
+    const extendedMinTime = new Date(d3.min(times));
+    extendedMinTime.setMinutes(extendedMinTime.getMinutes() - 1);
+
+    const extendedMaxTime = new Date(d3.max(times));
+    extendedMaxTime.setMinutes(extendedMaxTime.getMinutes() + 1);
 
     const xScale = d3
       .scaleTime()
-      .domain([extendedMin, extendedMax])
+      .domain([extendedMinYear, extendedMaxYear])
       .range([padding, w - padding]);
 
     const yScale = d3
       .scaleTime()
-      .domain([d3.max(times), d3.min(times)])
+      .domain([extendedMaxTime, extendedMinTime]) // inverted so faster times are at top
       .range([h - padding, padding]);
 
     svg
@@ -84,6 +91,7 @@ const fetchCyclistData = async () => {
 
     const xAxis = d3.axisBottom(xScale);
     const yAxis = d3.axisLeft(yScale).tickFormat(formatTime);
+
     svg
       .select('#x-axis')
       .attr('transform', `translate(0,${h - padding})`)
