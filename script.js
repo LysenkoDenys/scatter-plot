@@ -6,7 +6,7 @@ const w = 800;
 const h = 500;
 svg.attr('width', w).attr('height', h);
 
-const padding = 60;
+const padding = 80;
 
 const tooltip = d3
   .select('#tooltip')
@@ -91,6 +91,22 @@ const fetchCyclistData = async () => {
       });
     //===========================================================
     drawLegend(svg, w);
+
+    svg
+      .append('text')
+      .attr('x', w / 2)
+      .attr('y', h - 35)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .text('Years [y]');
+    svg
+      .append('text')
+      .attr('x', -h / 2)
+      .attr('y', 20)
+      .attr('text-anchor', 'middle')
+      .attr('transform', 'rotate(-90)')
+      .style('font-size', '14px')
+      .text('Time [mm:ss]');
 
     const xAxis = d3.axisBottom(xScale);
     const yAxis = d3.axisLeft(yScale).tickFormat(formatTime);
