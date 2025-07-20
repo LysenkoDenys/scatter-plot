@@ -46,7 +46,7 @@ const fetchCyclistData = async () => {
 
     const yScale = d3
       .scaleTime()
-      .domain([extendedMaxTime, extendedMinTime]) // inverted so faster times are at top
+      .domain([d3.max(times), d3.min(times)])
       .range([h - padding, padding]);
 
     svg
@@ -70,8 +70,11 @@ const fetchCyclistData = async () => {
           .html(
             `${d.Name}: ${d.Nationality}<br>Year: ${d.Year}, Time: ${d.Time}`
           )
-          .style('left', event.pageX + 12 + 'px')
-          .style('top', event.pageY - 28 + 'px');
+          .style('left', parseInt(xScale(new Date(d['Year'], 0))) + 10 + 'px')
+          .style(
+            'top',
+            parseInt(yScale(parseTime(d['Time']))) + padding / 2 + 'px'
+          );
 
         d3.select(this)
           .attr('fill', 'red')
